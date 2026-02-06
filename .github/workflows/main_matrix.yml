@@ -54,7 +54,7 @@ jobs:
             platform: esp32
     # Use 'arctastic' self-hosted runner pool when checking in the main repo
     runs-on: ${{ github.repository_owner == 'meshtastic' && 'arctastic' || 'ubuntu-latest' }}
-    if: ${{ github.event_name != 'workflow_dispatch' && github.repository == 'wjkennedy/meshtasticfirmware' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository == 'wjkennedy/meshtasticfirmware' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -83,12 +83,12 @@ jobs:
       platform: ${{ matrix.platform }}
 
   test-native:
-    if: ${{ !contains(github.ref_name, 'event/') && github.repository == 'wjkennedy/meshtasticfirmware' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (!contains(github.ref_name, 'event/') && github.repository == 'wjkennedy/meshtasticfirmware') }}
     uses: ./.github/workflows/test_native.yml
 
   gather-artifacts:
     # trunk-ignore(checkov/CKV2_GHA_1)
-    if: github.repository == 'wjkennedy/meshtasticfirmware'
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository == 'wjkennedy/meshtasticfirmware' }}
     permissions:
       contents: write
       pull-requests: write
@@ -169,7 +169,7 @@ jobs:
 
   release-artifacts:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && github.repository == 'wjkennedy/meshtasticfirmware' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository == 'wjkennedy/meshtasticfirmware' }}
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     needs:
@@ -239,7 +239,7 @@ jobs:
         arch:
           - esp32
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && github.repository == 'wjkennedy/meshtasticfirmware'}}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository == 'wjkennedy/meshtasticfirmware'}}
     needs: [release-artifacts, version]
     steps:
       - name: Checkout
@@ -291,7 +291,7 @@ jobs:
 
   publish-firmware:
     runs-on: ubuntu-24.04
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository == 'wjkennedy/meshtasticfirmware' }}
     needs: [release-firmware, version]
     env:
       targets: |-
