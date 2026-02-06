@@ -29,10 +29,6 @@ on:
 
   workflow_dispatch:
 
-env:
-  TARGETS_JSON: >-
-    [{"board":"tlora-v2-1-1_6","platform":"esp32"}]
-
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -53,7 +49,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(env.TARGETS_JSON) }}
+        include:
+          - board: tlora-v2-1-1_6
+            platform: esp32
     # Use 'arctastic' self-hosted runner pool when checking in the main repo
     runs-on: ${{ github.repository_owner == 'meshtastic' && 'arctastic' || 'ubuntu-latest' }}
     if: ${{ github.event_name != 'workflow_dispatch' && github.repository == 'wjkennedy/meshtasticfirmware' }}
@@ -75,7 +73,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(env.TARGETS_JSON) }}
+        include:
+          - board: tlora-v2-1-1_6
+            platform: esp32
     uses: ./.github/workflows/build_firmware.yml
     with:
       version: ${{ needs.version.outputs.long }}
@@ -212,7 +212,7 @@ jobs:
 
       - name: Generate Release manifest
         run: |
-          jq -n --arg ver "${{ needs.version.outputs.long }}" --argjson targets '${{ env.TARGETS_JSON }}' '{
+          jq -n --arg ver "${{ needs.version.outputs.long }}" --argjson targets '[{"board":"tlora-v2-1-1_6","platform":"esp32"}]' '{
             "version": $ver,
             "targets": $targets
           }' > firmware-${{ needs.version.outputs.long }}.json
